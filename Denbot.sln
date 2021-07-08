@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Denbot.Ingest", "Denbot.Ingest\Denbot.Ingest.csproj", "{7515B8C8-AB9F-498D-8CD1-1DBF810A3A36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Denbot.API", "Denbot.API\Denbot.API.csproj", "{9D63E5EF-0071-4628-8049-11E5B7A7A5F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Denbot.Common", "Denbot.Common\Denbot.Common.csproj", "{8D805C5C-4345-4535-A933-E57D0A32BBF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7515B8C8-AB9F-498D-8CD1-1DBF810A3A36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7515B8C8-AB9F-498D-8CD1-1DBF810A3A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7515B8C8-AB9F-498D-8CD1-1DBF810A3A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7515B8C8-AB9F-498D-8CD1-1DBF810A3A36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D63E5EF-0071-4628-8049-11E5B7A7A5F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D63E5EF-0071-4628-8049-11E5B7A7A5F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D63E5EF-0071-4628-8049-11E5B7A7A5F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D63E5EF-0071-4628-8049-11E5B7A7A5F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D805C5C-4345-4535-A933-E57D0A32BBF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D805C5C-4345-4535-A933-E57D0A32BBF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D805C5C-4345-4535-A933-E57D0A32BBF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D805C5C-4345-4535-A933-E57D0A32BBF1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

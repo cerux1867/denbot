@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <UserSecretsId>dotnet-Denbot.Ingest-204C1469-9ED4-4379-97A9-E29FF48C0C99</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DSharpPlusNextGen" Version="9.5.1" />
+        <PackageReference Include="DSharpPlusNextGen.CommandsNext" Version="9.5.1" />
+        <PackageReference Include="DSharpPlusNextGen.Interactivity" Version="9.5.1" />
+        <PackageReference Include="DSharpPlusNextGen.SlashCommands" Version="9.5.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.3.2" />
+        <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Results" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Denbot.Common\Denbot.Common.csproj" />
+    </ItemGroup>
+</Project>
