@@ -59,7 +59,7 @@ namespace Denbot.Ingest.Commands {
                 await context.EditResponseAsync(msgBuilder.WithContent(
                     $"The following configuration changes have been applied:\n**Enabled:**: {settings.Value.IsEnabled}\n**Quorum**: {settings.Value.Quorum}\n**Period**: {settings.Value.Period}\n**Timeout**: {settings.Value.Timeout}\n**Targetable role**: {role.Mention}"));
             }
-
+            
             [SlashCommand("vote",
                 "Starts a unhomie vote on the targeted user.")]
             public async Task VoteAsync(InteractionContext context,
@@ -121,6 +121,8 @@ namespace Denbot.Ingest.Commands {
                     .WithColor(new DiscordColor("fff203"))
                     .WithTimestamp(DateTime.Now)
                     .WithTitle("Unhomie vote")
+                    .AddField("Aye", "0", true)
+                    .AddField("Nay", "0", true)
                     .WithDescription(
                         $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Name}**. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Name}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
                     .WithFooter(context.User.Username, context.User.AvatarUrl);

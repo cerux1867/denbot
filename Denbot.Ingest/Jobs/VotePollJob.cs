@@ -24,6 +24,17 @@ namespace Denbot.Ingest.Jobs {
             var voteId = (string) context.MergedJobDataMap["voteId"];
 
             var vote = await _removeRoleVoteService.GetVoteAsync(voteId);
+            var ayeCount = vote.Value.Ballots.Count(x => x.Type == BallotType.Aye);
+            var nayCount = vote.Value.Ballots.Count(x => x.Type == BallotType.Nay);
+            orgEmbedBuilder
+                .ClearFields()
+                .AddField("Aye", ayeCount.ToString(), true)
+                .AddField("Nay", nayCount.ToString(), true);
+            await interactionContextInstance.EditResponseAsync(new DiscordWebhookBuilder()
+                .AddEmbed(orgEmbedBuilder)
+                .AddComponents(
+                    new DiscordButtonComponent(ButtonStyle.Success, $"RoleRemovalBallot-{voteId}-aye", "Aye"),
+                    new DiscordButtonComponent(ButtonStyle.Danger, $"RoleRemovalBallot-{voteId}-nay", "Nay")));
 
             if (vote.Value.State != VoteState.Ongoing) {
                 var target = await interactionContextInstance.Guild.GetMemberAsync(vote.Value.TargetUserId);
@@ -51,10 +62,9 @@ namespace Denbot.Ingest.Jobs {
                     VoteState.Passed => "Passed"
                 };
                 var voteResultString = $"**{stateString}** at **{vote.Value.LastUpdatedAt.ToUniversalTime()} UTC** with the final tally:\n";
-                var ayeCount = vote.Value.Ballots.Count(x => x.Type == BallotType.Aye);
-                var nayCount = vote.Value.Ballots.Count(x => x.Type == BallotType.Nay);
                 orgEmbedBuilder
                     .WithDescription(orgEmbedBuilder.Description + $"\n\n{voteResultString}")
+                    .ClearFields()
                     .AddField("Aye", ayeCount.ToString(), true)
                     .AddField("Nay", nayCount.ToString(), true);
                 var followupEmbed = new DiscordEmbedBuilder()
