@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -52,6 +53,18 @@ namespace Denbot.Ingest.Services {
 
             voteResult.EnsureSuccessStatusCode();
             return Result.Ok(JsonSerializer.Deserialize<RemoveRoleVote>(await voteResult.Content.ReadAsStringAsync(), _serializerOptions));
+        }
+
+        public async Task<ValueResult<List<RemoveRoleVote>>> GetAllGuildVotesAsync(ulong guildId) {
+            var votesResult = await _client.GetAsync($"Guilds/{guildId}/Remove-Role-Votes");
+            if (votesResult.StatusCode == HttpStatusCode.NotFound) {
+                return Result.NotFound<List<RemoveRoleVote>>("Guild with the given ID was not found");
+            }
+            votesResult.EnsureSuccessStatusCode();
+
+            return Result.Ok(
+                JsonSerializer.Deserialize<List<RemoveRoleVote>>(await votesResult.Content.ReadAsStringAsync(),
+                    _serializerOptions));
         }
 
         public async Task<ValueResult<RemoveRoleVote>> CastBallotAsync(string voteId, BallotType type, ulong userId) {
