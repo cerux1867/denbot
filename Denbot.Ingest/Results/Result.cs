@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Denbot.Ingest.Results {
     public abstract class Result {
@@ -23,6 +24,16 @@ namespace Denbot.Ingest.Results {
 
         public static FailureValueResult<T> NotFound<T>(string error) {
             return new(error, ResultType.NotFound);
+        }
+
+        public bool IsSuccess() {
+            return Type == ResultType.Ok;
+        }
+
+        public void EnsureSuccess() {
+            if (Type != ResultType.Ok) {
+                throw new Exception($"The operation did not succeed. The errors were: {string.Join(",", Errors)}");
+            }
         }
     }
 }
