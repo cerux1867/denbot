@@ -8,6 +8,7 @@ using Denbot.Ingest.Results;
 using Denbot.Ingest.Services;
 using DSharpPlusNextGen;
 using DSharpPlusNextGen.Entities;
+using DSharpPlusNextGen.Enums;
 using DSharpPlusNextGen.SlashCommands;
 using Quartz;
 
@@ -122,7 +123,7 @@ namespace Denbot.Ingest.Commands {
                     .WithTimestamp(DateTime.Now)
                     .WithTitle("Unhomie vote")
                     .WithDescription(
-                        $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Name}**. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Name}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
+                        $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Name}** for a period of **{unhomieSettings.Value.Period}** minutes. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Name}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
                     .WithFooter(context.User.Username, context.User.AvatarUrl);
                 msgBuilder = new DiscordWebhookBuilder()
                     .AddEmbed(embed)

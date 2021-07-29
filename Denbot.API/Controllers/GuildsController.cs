@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Denbot.API.Entities;
-using Denbot.API.Models;
 using Denbot.API.Services;
 using Denbot.Common.Models;
 using Microsoft.AspNetCore.Mvc;
