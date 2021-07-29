@@ -213,6 +213,8 @@ namespace Denbot.Ingest.Commands {
                     });
                 }
 
+                rankingsList = rankingsList.Take(10).ToList();
+
                 var membersList = new List<DiscordMember>();
                 foreach (var userId in rankingsList.Select(r => r.UserId)) {
                     var member = await ctx.Guild.GetMemberAsync(userId);
