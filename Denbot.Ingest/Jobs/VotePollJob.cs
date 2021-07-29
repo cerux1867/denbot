@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Denbot.Common.Models;
 using Denbot.Ingest.Services;
 using DSharpPlusNextGen.Entities;
+using DSharpPlusNextGen.Enums;
 using DSharpPlusNextGen.SlashCommands;
 using Microsoft.Extensions.Logging;
 using Quartz;

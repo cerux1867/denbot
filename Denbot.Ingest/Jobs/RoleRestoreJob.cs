@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DSharpPlusNextGen.Entities;
 using DSharpPlusNextGen.SlashCommands;
 using Quartz;
@@ -14,8 +13,7 @@ namespace Denbot.Ingest.Jobs {
             var member  = await interactionContext.Guild.GetMemberAsync(targetUser.Id);
             await member.GrantRoleAsync(role, "Denbot: Role restore after vote");
             await interactionContext.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You have been restored to the role {role.Mention}")
-                .AsEphemeral(true));
+                .WithContent($"User {member.Mention} has been restored to the role **{role.Name}**"));
         }
     }
 }

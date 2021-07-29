@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using DSharpPlusNextGen;
-using DSharpPlusNextGen.Entities;
 using DSharpPlusNextGen.SlashCommands;
 
 namespace Denbot.Ingest.Attributes {
