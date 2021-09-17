@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlusNextGen.Entities;
+using DisCatSharp.Entities;
 
 namespace Denbot.Ingest.InteractionHandlers {
     public class InteractionResolver {

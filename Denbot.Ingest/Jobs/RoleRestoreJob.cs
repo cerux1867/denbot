@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlusNextGen.Entities;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.Entities;
 using Quartz;
 
 namespace Denbot.Ingest.Jobs {

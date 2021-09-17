@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.Entities;
+using DisCatSharp;
+using DisCatSharp.Entities;
 
 namespace Denbot.Ingest.InteractionHandlers {
     public abstract class InteractionHandlerBase : IInteractionHandler {

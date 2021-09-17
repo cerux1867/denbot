@@ -7,10 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DSharpPlusNextGen" Version="9.5.7" />
-        <PackageReference Include="DSharpPlusNextGen.CommandsNext" Version="9.5.7" />
-        <PackageReference Include="DSharpPlusNextGen.Interactivity" Version="9.5.7" />
-        <PackageReference Include="DSharpPlusNextGen.SlashCommands" Version="9.5.7" />
+        <PackageReference Include="DisCatSharp" Version="9.8.2" />
+        <PackageReference Include="DisCatSharp.ApplicationCommands" Version="9.8.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
         <PackageReference Include="Quartz.Extensions.Hosting" Version="3.3.2" />

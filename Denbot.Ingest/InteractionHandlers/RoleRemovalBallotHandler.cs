@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Denbot.Common.Models;
 using Denbot.Ingest.Results;
 using Denbot.Ingest.Services;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.Entities;
+using DisCatSharp;
+using DisCatSharp.Entities;
 
 namespace Denbot.Ingest.InteractionHandlers {
     public class RoleRemovalBallotHandler : InteractionHandlerBase {
@@ -13,9 +13,9 @@ namespace Denbot.Ingest.InteractionHandlers {
         public RoleRemovalBallotHandler(DiscordClient client, IRemoveRoleVoteService removeRoleVoteService) : base(client) {
             _removeRoleVoteService = removeRoleVoteService;
         }
-
+        
         public override async Task HandleAsync(DiscordInteraction interaction) {
-            await interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+            await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
             var ballotIdentifierComponents = interaction.Data.CustomId.Split("-");
             var ongoingVote = await _removeRoleVoteService.GetVoteAsync(ballotIdentifierComponents[1]);
             if (ongoingVote.Value.State != VoteState.Ongoing) {
