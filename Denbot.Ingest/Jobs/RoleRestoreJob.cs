@@ -8,7 +8,7 @@ namespace Denbot.Ingest.Jobs {
         public async Task Execute(IJobExecutionContext context) {
             var targetRole = (DiscordRole) context.MergedJobDataMap["targetRole"];
             var targetUser = (DiscordUser) context.MergedJobDataMap["targetUser"];
-            var interactionContext = (InteractionContext) context.MergedJobDataMap["interactionContext"];
+            var interactionContext = (BaseContext) context.MergedJobDataMap["interactionContext"];
             var role = interactionContext.Guild.GetRole(targetRole.Id);
             var member  = await interactionContext.Guild.GetMemberAsync(targetUser.Id);
             await member.GrantRoleAsync(role, "Denbot: Role restore after vote");

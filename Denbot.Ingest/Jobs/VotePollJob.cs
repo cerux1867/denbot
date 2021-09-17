@@ -20,7 +20,7 @@ namespace Denbot.Ingest.Jobs {
         }
 
         public async Task Execute(IJobExecutionContext context) {
-            var interactionContextInstance = (InteractionContext) context.MergedJobDataMap["interactionContext"];
+            var interactionContextInstance = (BaseContext) context.MergedJobDataMap["interactionContext"];
             var orgEmbedBuilder = (DiscordEmbedBuilder) context.MergedJobDataMap["originalEmbedBuilder"];
             var voteId = (string) context.MergedJobDataMap["voteId"];
 
