@@ -41,12 +41,14 @@ namespace Denbot.Ingest {
                 _logger.LogInformation("Interaction created");
                 return Task.CompletedTask;
             };
-            var slashCommands = _discordClient.UseApplicationCommands(new ApplicationCommandsConfiguration {
+            var applicationCommands = _discordClient.UseApplicationCommands(new ApplicationCommandsConfiguration {
                 Services = _serviceProvider
             });
+            
             foreach (var serverId in _options.Value.SlashCommandServers) {
-                slashCommands.RegisterCommands<DevModule>(serverId);
-                slashCommands.RegisterCommands<UnhomieModule>(serverId);
+                applicationCommands.RegisterCommands<DevModule>(serverId);
+                applicationCommands.RegisterCommands<SlashUnhomieModule>(serverId);
+                applicationCommands.RegisterCommands<ContextMenuUnhomieModule>(serverId);
             }
 
             await _discordClient.ConnectAsync();

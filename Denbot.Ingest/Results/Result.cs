@@ -19,7 +19,7 @@ namespace Denbot.Ingest.Results {
         }
         
         public static FailureValueResult<T> Conflict<T>(string error) {
-            return new(error, ResultType.NotFound);
+            return new(error, ResultType.Conflict);
         }
 
         public static FailureValueResult<T> NotFound<T>(string error) {
