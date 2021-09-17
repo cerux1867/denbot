@@ -4,11 +4,8 @@ using System.Threading.Tasks;
 using Denbot.Ingest.Commands;
 using Denbot.Ingest.InteractionHandlers;
 using Denbot.Ingest.Models;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.Interactivity;
-using DSharpPlusNextGen.Interactivity.Enums;
-using DSharpPlusNextGen.Interactivity.Extensions;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -44,10 +41,7 @@ namespace Denbot.Ingest {
                 _logger.LogInformation("Interaction created");
                 return Task.CompletedTask;
             };
-            _discordClient.UseInteractivity(new InteractivityConfiguration {
-                PollBehaviour = PollBehaviour.KeepEmojis
-            });
-            var slashCommands = _discordClient.UseSlashCommands(new SlashCommandsConfiguration {
+            var slashCommands = _discordClient.UseApplicationCommands(new ApplicationCommandsConfiguration {
                 Services = _serviceProvider
             });
             foreach (var serverId in _options.Value.SlashCommandServers) {

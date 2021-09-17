@@ -3,12 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Denbot.Ingest.Attributes;
 using Denbot.Ingest.Models;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.Entities;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.Entities;
 
 namespace Denbot.Ingest.Commands {
-    public class DevModule : SlashCommandModule {
+    public class DevModule : ApplicationCommandsModule {
         private readonly IngestStatus _ingestStatus;
 
         public DevModule(IngestStatus ingestStatus) {

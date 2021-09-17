@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp.ApplicationCommands;
 
 namespace Denbot.Ingest.Attributes {
     public class SlashIsOwnerAttribute : SlashCheckBaseAttribute {

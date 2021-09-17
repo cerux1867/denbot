@@ -3,7 +3,7 @@ using System.IO;
 using Denbot.Ingest.InteractionHandlers;
 using Denbot.Ingest.Models;
 using Denbot.Ingest.Services;
-using DSharpPlusNextGen;
+using DisCatSharp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +18,7 @@ namespace Denbot.Ingest {
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", false, true)
             .AddJsonFile(
-                $"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json",
+                $"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")}.json",
                 true, true)
             .AddEnvironmentVariables()
             .Build();
@@ -49,6 +49,7 @@ namespace Denbot.Ingest {
                             LoggerFactory = new SerilogLoggerFactory(Log.Logger)
                         });
                     });
+                    
                     services.AddSingleton<RoleRemovalBallotHandler>();
                     services.AddSingleton<InteractionResolver>();
                     services.AddSingleton<IngestStatus>();

@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
 
 namespace Denbot.Ingest.Attributes {
     /// <summary>
-    /// An implementation of <see cref="DSharpPlusNextGen.CommandsNext.Attributes.RequireUserPermissionsAttribute"/> for slash commands.
+    /// An implementation of RequireUserPermissionsAttribute for slash commands.
     /// Defines that usage of this command is restricted to members with specified permissions.
     /// </summary>
     public class SlashRequireUserPermissionsAttribute : SlashCheckBaseAttribute {

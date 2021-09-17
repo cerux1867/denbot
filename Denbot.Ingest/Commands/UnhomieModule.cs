@@ -8,16 +8,16 @@ using Denbot.Ingest.Jobs;
 using Denbot.Ingest.Models;
 using Denbot.Ingest.Results;
 using Denbot.Ingest.Services;
-using DSharpPlusNextGen;
-using DSharpPlusNextGen.Entities;
-using DSharpPlusNextGen.Enums;
-using DSharpPlusNextGen.SlashCommands;
+using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.Entities;
+using DisCatSharp.Enums;
 using Quartz;
 
 namespace Denbot.Ingest.Commands {
-    public class UnhomieModule : SlashCommandModule {
+    public class UnhomieModule : ApplicationCommandsModule {
         [SlashCommandGroup("unhomie", "Starts unhomie votes and configures the voting system")]
-        public class Unhomie : SlashCommandModule {
+        public class Unhomie : ApplicationCommandsModule {
             private readonly IRemoveRoleVoteService _removeRoleVoteService;
             private readonly ISchedulerFactory _schedulerFactory;
 
@@ -153,7 +153,7 @@ namespace Denbot.Ingest.Commands {
                         x.WithIntervalInSeconds(5);
                         x.RepeatForever();
                     })
-                    .EndAt(timeout)
+                    // .EndAt(timeout)
                     .Build();
                 var scheduler = await _schedulerFactory.GetScheduler();
                 await scheduler.ScheduleJob(job, trigger);
