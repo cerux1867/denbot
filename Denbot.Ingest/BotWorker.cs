@@ -38,27 +38,18 @@ namespace Denbot.Ingest {
             _discordClient.MessageCreated += async (_, args) => {
                 if (args.Author.IsBot) return;
 
-                var emotes = Regex.Matches(args.Message.Content, EmotePattern).Select(m => m.ToString()).Distinct();
+                var emotes = Regex.Matches(args.Message.Content, EmotePattern)
+                    .Select(m => m.ToString()).Distinct();
 
-                var attachmentMimeTypes = args.Message.Attachments.Select(a => a.MediaType).GroupBy(a => a)
-                    .Select(a => a.Key).ToList();
-
-                var isUri = Uri.TryCreate(args.Message.Content, UriKind.Absolute, out var uriResult)
-                            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-                if (isUri) {
-                    if (Path.HasExtension(uriResult.AbsoluteUri)) {
-                        var mimeType =
-                            MimeTypeMap.List.MimeTypeMap.GetMimeType(Path.GetExtension(uriResult.AbsoluteUri));
-                        attachmentMimeTypes.Add(mimeType.First());
-                    } else if (uriResult.Host is "tenor.com" or "giphy.com") {
-                        attachmentMimeTypes.Add("image/gif");
-                    }
-                }
+                var attachmentMimeTypes = args.Message.Attachments.Select(a => a.MediaType)
+                    .GroupBy(a => a).Select(a => a.Key).ToList();
 
                 await _analyticsService.LogMessageSentEventAsync(args.Message.Id, args.Author.Id, args.Channel.Id,
-                    args.Guild.Id,
-                    args.Message.Timestamp, emotes.ToArray(), args.Message.MentionedUsers.Where(u => u.IsBot == false).Select(u => u.Id).ToArray(),
-                    args.Message.MentionedRoles.Select(r => r.Id).ToArray(), attachmentMimeTypes.ToArray(),
+                    args.Guild.Id, args.Message.Content, args.Message.Timestamp, emotes.ToArray(), 
+                    args.Message.MentionedUsers.Where(u => u.IsBot == false).Select(u => u.Id).ToArray(),
+                    args.Message.MentionedRoles.Select(r => r.Id).ToArray(), 
+                    args.MentionedChannels.Select(u => u.Id).ToArray(), 
+                    args.Message.MentionEveryone , attachmentMimeTypes.ToArray(),
                     args.Message.Reference?.Message.Id, args.Message.Thread?.Id);
             };
 
@@ -69,8 +60,8 @@ namespace Denbot.Ingest {
             
             _discordClient.ComponentInteractionCreated += async (_, args) => {
                 _logger.LogInformation(
-                    "Component interaction {ComponentId} created by user {DiscordUsername} in guild '{DiscordGuildName}' with values {ComponentValues}",
-                    args.Id, $"{args.User.Username}#{args.User.Discriminator}", args.Guild.Name, args.Values);
+                    "Component interaction {ComponentId} created by user {DiscordUserId} in guild '{DiscordGuildId}' with values {ComponentValues}",
+                    args.Id, args.User.Id, args.Guild.Id, args.Values);
                 try {
                     await _interactionResolver.ResolveInteractionAsync(args.Interaction);
                 }
@@ -81,16 +72,14 @@ namespace Denbot.Ingest {
             };
             _discordClient.ContextMenuInteractionCreated += (_, args) => {
                 _logger.LogInformation(
-                    "Context menu interaction {InteractionId} created by user {DiscordUsername} in guild '{DiscordGuildName}'",
-                    args.Interaction.Id, $"{args.Interaction.User.Username}#{args.Interaction.User.Discriminator}",
-                    args.Interaction.Guild.Name);
+                    "Context menu interaction {InteractionId} created by user {DiscordUserId} in guild '{DiscordGuildId}'",
+                    args.Interaction.Id, args.Interaction.User.Id, args.Interaction.Guild.Id);
                 return Task.CompletedTask;
             };
             _discordClient.InteractionCreated += (_, args) => {
                 _logger.LogInformation(
-                    "Interaction {InteractionId} created by user {DiscordUsername} in guild '{DiscordGuildName}'",
-                    args.Interaction.Id, $"{args.Interaction.User.Username}#{args.Interaction.User.Discriminator}",
-                    args.Interaction.Guild.Name);
+                    "Interaction {InteractionId} created by user {DiscordUserId} in guild '{DiscordGuildId}'",
+                    args.Interaction.Id, args.Interaction.User.Id, args.Interaction.Guild.Id);
                 return Task.CompletedTask;
             };
             var applicationCommands = _discordClient.UseApplicationCommands(new ApplicationCommandsConfiguration {
