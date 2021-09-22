@@ -38,9 +38,12 @@ namespace Denbot.Ingest {
                 .ConfigureServices((hostContext, services) => {
                     services.Configure<DiscordSettings>(hostContext.Configuration.GetSection("Discord"));
                     services.Configure<BackendSettings>(hostContext.Configuration.GetSection("Backend"));
+                    services.Configure<AnalyticsSettings>(hostContext.Configuration.GetSection("Analytics"));
+                    
                     services.AddQuartz(q => { q.UseMicrosoftDependencyInjectionJobFactory(); });
                     services.AddQuartzHostedService(q => { q.WaitForJobsToComplete = true; });
                     services.AddHttpClient<IRemoveRoleVoteService, RemoveRoleVoteHttpService>();
+                    services.AddHttpClient<IAnalyticsService, LogstashAnalyticsService>();
                     services.AddSingleton(provider => {
                         var settings = provider.GetRequiredService<IOptions<DiscordSettings>>();
                         return new DiscordClient(new DiscordConfiguration {
@@ -52,7 +55,6 @@ namespace Denbot.Ingest {
                     
                     services.AddSingleton<RoleRemovalBallotHandler>();
                     services.AddSingleton<InteractionResolver>();
-                    services.AddSingleton<IngestStatus>();
                     services.AddHostedService<BotWorker>();
                 });
     }

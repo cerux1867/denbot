@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Denbot.Common.Models;
 using Denbot.Ingest.Jobs;
 using Denbot.Ingest.Results;
 using Denbot.Ingest.Services;
@@ -59,28 +58,6 @@ namespace Denbot.Ingest.Commands {
                 await context.EditResponseAsync(msgBuilder);
                 return;
             }
-            
-            var scheduler = await SchedulerFactory.GetScheduler();
-
-            if (context.User.Id == 102505595180957696 && target.Id == 727556118984917002) {
-                var emote = DiscordEmoji.FromName(context.Client, ":SpecialChamp:");
-                await context.EditResponseAsync(new DiscordWebhookBuilder()
-                    .WithContent(
-                        $"Oooops, seems like {context.User.Mention} has been too busy with complaints like {emote} *CERUX WHEN ARE YOU ADDING A SOUTHPAW BIAS* or {emote} *but 'its work' and 'be grateful off the new bot' ( that somehow has less feature than the old one)* and has somehow implemented the bias for the wrong user, oh nyoooooo {DiscordEmoji.FromName(context.Client, ":DonkSad:")}"));
-                await member.RevokeRoleAsync(targetableRole);
-                var restoreJob = JobBuilder.Create<RoleRestoreJob>()
-                    .WithIdentity("CeruxSaltyDerhauni-Restore", "RoleRemovalVote")
-                    .Build();
-                restoreJob.JobDataMap.Put("interactionContext", context);
-                restoreJob.JobDataMap.Put("targetRole", targetableRole);
-                restoreJob.JobDataMap.Put("targetUser", target);
-                var trigger = TriggerBuilder.Create()
-                    .WithIdentity($"CeruxSaltyDerhauni-Restore-restore", "RoleRemovalVote")
-                    .StartAt(DateTimeOffset.Now.AddMinutes(unhomieSettings.Value.Period))
-                    .Build();
-                await scheduler.ScheduleJob(restoreJob, trigger);
-                return;
-            }
 
             var voteResult =
                 await RemoveRoleVoteService.StartVoteAsync(context.Guild.Id, context.User.Id, target.Id);
@@ -128,6 +105,7 @@ namespace Denbot.Ingest.Commands {
                     x.RepeatForever();
                 })
                 .Build();
+            var scheduler = await SchedulerFactory.GetScheduler();
             await scheduler.ScheduleJob(job, triggerPoll);
         }
     }
