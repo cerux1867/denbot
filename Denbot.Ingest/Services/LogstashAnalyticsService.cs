@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -25,18 +26,24 @@ namespace Denbot.Ingest.Services {
         }
         
         /// <inheritdoc />
-        public async Task LogMessageSentEventAsync(ulong msgId, ulong authorId, ulong channelId, ulong guildId, DateTimeOffset sentAt,
-            string[] emotes, ulong[] userMentions, ulong[] roleMentions, string[] attachmentMimeTypes, ulong? repliesTo, 
-            ulong? threadId) {
+        public async Task LogMessageSentEventAsync(ulong msgId, ulong authorId, ulong channelId, ulong guildId, string message, DateTimeOffset sentAt,
+            string[] emotes, ulong[] userMentions, ulong[] roleMentions, ulong[] channelMentions, bool mentionsEveryone, 
+            string[] attachmentMimeTypes, ulong? repliesTo, ulong? threadId) {
+            if (ShouldBeIgnored(guildId, channelId)) {
+                return;
+            }
             var msgLog = new MessageLog {
                 MessageId = msgId,
                 UserId = authorId,
                 ChannelId = channelId,
                 GuildId = guildId,
+                Message = message,
                 Timestamp = sentAt,
                 Emotes = emotes,
                 UserMentions = userMentions,
                 RoleMentions = roleMentions,
+                ChannelMentions = channelMentions,
+                MentionsEveryone = mentionsEveryone,
                 AttachmentMimeTypes = attachmentMimeTypes,
                 RepliedMessageId = repliesTo.GetValueOrDefault(),
                 ThreadId = threadId.GetValueOrDefault()
@@ -63,6 +70,23 @@ namespace Denbot.Ingest.Services {
                 _logger.LogError("Could not dispatch reaction analytics event with ID {MessageId}. Received response status code {StatusCode} with response body {ResponseBody}",
                     msgId, response.StatusCode, await response.Content.ReadAsStringAsync());
             }
+        }
+
+        private bool ShouldBeIgnored(ulong guildId, ulong channelId) {
+            if (_settings.Value.IgnoreDict.ContainsKey(guildId.ToString())) {
+                _settings.Value.IgnoreDict.TryGetValue(guildId.ToString(), out var channels);
+                if (channels == null) {
+                    return true;
+                }
+
+                if (channels.Length > 0) {
+                    if (channels.Contains(channelId)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
