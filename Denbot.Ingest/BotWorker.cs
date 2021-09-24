@@ -35,40 +35,51 @@ namespace Denbot.Ingest {
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-            _discordClient.MessageCreated += async (_, args) => {
-                if (args.Author.IsBot) return;
+            _discordClient.MessageCreated += (_, args) => {
+                Task.Run(async () => {
+                    if (args.Author.IsBot) return;
 
-                var emotes = Regex.Matches(args.Message.Content, EmotePattern)
-                    .Select(m => m.ToString()).Distinct();
+                    var emotes = Regex.Matches(args.Message.Content, EmotePattern)
+                        .Select(m => m.ToString()).Distinct();
 
-                var attachmentMimeTypes = args.Message.Attachments.Select(a => a.MediaType)
-                    .GroupBy(a => a).Select(a => a.Key).ToList();
+                    var attachmentMimeTypes = args.Message.Attachments.Select(a => a.MediaType)
+                        .GroupBy(a => a).Select(a => a.Key).ToList();
 
-                await _analyticsService.LogMessageSentEventAsync(args.Message.Id, args.Author.Id, args.Channel.Id,
-                    args.Guild.Id, args.Message.Content, args.Message.Timestamp, emotes.ToArray(), 
-                    args.Message.MentionedUsers.Where(u => u.IsBot == false).Select(u => u.Id).ToArray(),
-                    args.Message.MentionedRoles.Select(r => r.Id).ToArray(), 
-                    args.MentionedChannels.Select(u => u.Id).ToArray(), 
-                    args.Message.MentionEveryone , attachmentMimeTypes.ToArray(),
-                    args.Message.Reference?.Message.Id, args.Message.Thread?.Id);
+                    await _analyticsService.LogMessageSentEventAsync(args.Message.Id, args.Author.Id, args.Channel.Id,
+                        args.Guild.Id, args.Message.Content, args.Message.Timestamp, emotes.ToArray(),
+                        args.Message.MentionedUsers.Where(u => u.IsBot == false).Select(u => u.Id).ToArray(),
+                        args.Message.MentionedRoles.Select(r => r.Id).ToArray(),
+                        args.MentionedChannels.Select(u => u.Id).ToArray(),
+                        args.Message.MentionEveryone, attachmentMimeTypes.ToArray(),
+                        args.Message.Reference?.Message.Id, args.Message.Thread?.Id);
+                }, stoppingToken);
+                return Task.CompletedTask;
             };
 
-            _discordClient.MessageReactionAdded += async (_, args) => {
-                await _analyticsService.LogReactionAddedEventAsync(args.Message.Id, args.User.Id, DateTimeOffset.Now,
-                    args.Emoji.ToString());
+            _discordClient.MessageReactionAdded += (_, args) => {
+                Task.Run(async () => {
+                    await _analyticsService.LogReactionAddedEventAsync(args.Message.Id, args.User.Id,
+                        DateTimeOffset.Now,
+                        args.Emoji.ToString());
+                }, stoppingToken);
+                return Task.CompletedTask;
             };
             
-            _discordClient.ComponentInteractionCreated += async (_, args) => {
-                _logger.LogInformation(
-                    "Component interaction {ComponentId} created by user {DiscordUserId} in guild '{DiscordGuildId}' with values {ComponentValues}",
-                    args.Id, args.User.Id, args.Guild.Id, args.Values);
-                try {
-                    await _interactionResolver.ResolveInteractionAsync(args.Interaction);
-                }
-                catch (Exception ex) {
-                    _logger.LogError(ex, "Error occured while handling component interaction {ComponentId}", args.Id);
-                    throw;
-                }
+            _discordClient.ComponentInteractionCreated += (_, args) => {
+                Task.Run(async () => {
+                    _logger.LogInformation(
+                        "Component interaction {ComponentId} created by user {DiscordUserId} in guild '{DiscordGuildId}' with values {ComponentValues}",
+                        args.Id, args.User.Id, args.Guild.Id, args.Values);
+                    try {
+                        await _interactionResolver.ResolveInteractionAsync(args.Interaction);
+                    }
+                    catch (Exception ex) {
+                        _logger.LogError(ex, "Error occured while handling component interaction {ComponentId}",
+                            args.Id);
+                        throw;
+                    }
+                }, stoppingToken);
+                return Task.CompletedTask;
             };
             _discordClient.ContextMenuInteractionCreated += (_, args) => {
                 _logger.LogInformation(
