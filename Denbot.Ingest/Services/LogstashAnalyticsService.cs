@@ -23,6 +23,8 @@ namespace Denbot.Ingest.Services {
             _jsonSerializerOptions = new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+
+            _logger.LogInformation("Analytics enabled: {AnalyticsEnabled}", _settings.Value.Enabled);
         }
         
         /// <inheritdoc />
@@ -73,6 +75,10 @@ namespace Denbot.Ingest.Services {
         }
 
         private bool ShouldBeIgnored(ulong guildId, ulong channelId) {
+            if (!_settings.Value.Enabled) {
+                return true;
+            }
+            
             if (_settings.Value.IgnoreDict.ContainsKey(guildId.ToString())) {
                 _settings.Value.IgnoreDict.TryGetValue(guildId.ToString(), out var channels);
                 if (channels == null) {
