@@ -178,6 +178,7 @@ namespace Denbot.Ingest {
                 ChannelId = msg.ChannelId,
                 GuildId = msg.Channel.Guild.Id,
                 Emotes = emotes.ToArray(),
+                Stickers = msg.Stickers.Select(i => i.Name).ToArray(),
                 AttachmentMimeTypes = attachmentMimeTypes.ToArray(),
                 Message = msg.Content,
                 Timestamp = msg.Timestamp,

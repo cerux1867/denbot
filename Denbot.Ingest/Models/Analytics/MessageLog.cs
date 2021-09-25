@@ -5,6 +5,7 @@
         public ulong GuildId { get; set; }
         public string Message { get; set; }
         public string[] Emotes { get; set; }
+        public string[] Stickers { get; set; }
         public ulong[] UserMentions { get; set; }
         public ulong[] RoleMentions { get; set; }
         public ulong[] ChannelMentions { get; set; }
