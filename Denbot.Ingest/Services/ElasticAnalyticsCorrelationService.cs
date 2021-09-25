@@ -18,7 +18,7 @@ namespace Denbot.Ingest.Services {
             _elasticClient = elasticClient;
             _settings = settings;
         }
-
+        /// <inheritdoc />
         public async Task DeleteMessageIfExistsAsync(ulong messageId) {
             var response = await _elasticClient.DeleteByQueryAsync<MessageLog>(d => d
                 .Index(_settings.Value.AnalyticsIndexName)
@@ -26,10 +26,7 @@ namespace Denbot.Ingest.Services {
                     .Bool(b => b
                         .Must(m => m
                                 .Match(e => e
-                                    .Field(l => l.MessageId).Query(messageId.ToString())),
-                            m => m.Match(e => e
-                                .Field(l => l.EventType)
-                                .Query(((int)AnalyticsEventType.Message).ToString()))
+                                    .Field(l => l.MessageId).Query(messageId.ToString()))
                         )
                     )
                 )
@@ -39,7 +36,7 @@ namespace Denbot.Ingest.Services {
                     messageId);
             }
         }
-
+        /// <inheritdoc />
         public async Task UpdateMessageIfExistsAsync(MessageLog msg) {
             var mentionsEveryone = msg.MentionsEveryone ? "true" : "false";
             var response = await _elasticClient.UpdateByQueryAsync<MessageLog>(u => u
@@ -73,7 +70,7 @@ namespace Denbot.Ingest.Services {
                     msg.MessageId);
             }
         }
-
+        /// <inheritdoc />
         public async Task DeleteReactionIfExistsAsync(ulong msgId, ulong userId) {
             var response = await _elasticClient.DeleteByQueryAsync<ReactionLog>(d => d
                 .Index(_settings.Value.AnalyticsIndexName)
