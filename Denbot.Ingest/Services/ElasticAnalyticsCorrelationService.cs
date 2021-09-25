@@ -18,6 +18,7 @@ namespace Denbot.Ingest.Services {
             _elasticClient = elasticClient;
             _settings = settings;
         }
+
         /// <inheritdoc />
         public async Task DeleteMessageIfExistsAsync(ulong messageId) {
             var response = await _elasticClient.DeleteByQueryAsync<MessageLog>(d => d
@@ -25,17 +26,19 @@ namespace Denbot.Ingest.Services {
                 .Query(q => q
                     .Bool(b => b
                         .Must(m => m
-                                .Match(e => e
-                                    .Field(l => l.MessageId).Query(messageId.ToString()))
+                            .Match(e => e
+                                .Field(l => l.MessageId).Query(messageId.ToString()))
                         )
                     )
                 )
             );
             if (!response.IsValid) {
-                _logger.LogError("Unable to correlate message deletion of Discord message with ID {DiscordMessageId}",
-                    messageId);
+                _logger.LogError(
+                    "Unable to correlate message deletion of Discord message with ID {DiscordMessageId} with error: {@Error}",
+                    messageId, response.ServerError);
             }
         }
+
         /// <inheritdoc />
         public async Task UpdateMessageIfExistsAsync(MessageLog msg) {
             var mentionsEveryone = msg.MentionsEveryone ? "true" : "false";
@@ -66,10 +69,12 @@ namespace Denbot.Ingest.Services {
             );
 
             if (!response.IsValid) {
-                _logger.LogError("Unable to correlate message update of Discord message with ID {DiscordMessageId}",
-                    msg.MessageId);
+                _logger.LogError(
+                    "Unable to correlate message update of Discord message with ID {DiscordMessageId} with error: {@Error}",
+                    msg.MessageId, response.ServerError);
             }
         }
+
         /// <inheritdoc />
         public async Task DeleteReactionIfExistsAsync(ulong msgId, ulong userId) {
             var response = await _elasticClient.DeleteByQueryAsync<ReactionLog>(d => d
@@ -89,7 +94,9 @@ namespace Denbot.Ingest.Services {
                 )
             );
             if (!response.IsValid) {
-                _logger.LogError("Unable to correlate reaction removal on Discord message with ID {DiscordMessageId} from user {UserId}", msgId, userId);
+                _logger.LogError(
+                    "Unable to correlate reaction removal on Discord message with ID {DiscordMessageId} from user {UserId} with error: {@Error}",
+                    msgId, userId, response.ServerError);
             }
         }
     }

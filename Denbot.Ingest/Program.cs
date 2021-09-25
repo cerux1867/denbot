@@ -60,8 +60,7 @@ namespace Denbot.Ingest {
                             connectionSettings = new ConnectionSettings(settings.Value.Elastic.CloudId,
                                 new ApiKeyAuthenticationCredentials(settings.Value.Elastic.ApiKey));
                         }
-
-                        connectionSettings.EnableDebugMode();
+                        
                         return new ElasticClient(connectionSettings);
                     });
                     services.AddTransient<IAnalyticsCorrelationService, ElasticAnalyticsCorrelationService>();
