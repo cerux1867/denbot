@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Denbot.Common.Models;
 using Denbot.Ingest.Attributes;
-using Denbot.Ingest.Jobs;
 using Denbot.Ingest.Results;
 using Denbot.Ingest.Services;
 using DisCatSharp;
 using DisCatSharp.ApplicationCommands;
 using DisCatSharp.Entities;
-using DisCatSharp.Enums;
 using Quartz;
 
 namespace Denbot.Ingest.Commands {
