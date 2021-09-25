@@ -28,33 +28,15 @@ namespace Denbot.Ingest.Services {
         }
         
         /// <inheritdoc />
-        public async Task LogMessageSentEventAsync(ulong msgId, ulong authorId, ulong channelId, ulong guildId, string message, DateTimeOffset sentAt,
-            string[] emotes, ulong[] userMentions, ulong[] roleMentions, ulong[] channelMentions, bool mentionsEveryone, 
-            string[] attachmentMimeTypes, ulong? repliesTo, ulong? threadId) {
-            if (ShouldBeIgnored(guildId, channelId)) {
+        public async Task LogMessageSentEventAsync(MessageLog messageLog) {
+            if (ShouldBeIgnored(messageLog.GuildId, messageLog.ChannelId)) {
                 return;
             }
-            var msgLog = new MessageLog {
-                MessageId = msgId,
-                UserId = authorId,
-                ChannelId = channelId,
-                GuildId = guildId,
-                Message = message,
-                Timestamp = sentAt,
-                Emotes = emotes,
-                UserMentions = userMentions,
-                RoleMentions = roleMentions,
-                ChannelMentions = channelMentions,
-                MentionsEveryone = mentionsEveryone,
-                AttachmentMimeTypes = attachmentMimeTypes,
-                RepliedMessageId = repliesTo.GetValueOrDefault(),
-                ThreadId = threadId.GetValueOrDefault()
-            };
             var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}", 
-                new StringContent(JsonSerializer.Serialize(msgLog, _jsonSerializerOptions), Encoding.UTF8, "application/json"));
+                new StringContent(JsonSerializer.Serialize(messageLog, _jsonSerializerOptions), Encoding.UTF8, "application/json"));
             if (!response.IsSuccessStatusCode) {
                 _logger.LogError("Could not dispatch message analytics event with ID {MessageId}. Received response status code {StatusCode} with response body {ResponseBody}",
-                    msgId, response.StatusCode, await response.Content.ReadAsStringAsync());
+                    messageLog.MessageId, response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
 

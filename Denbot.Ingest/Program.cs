@@ -4,10 +4,12 @@ using Denbot.Ingest.InteractionHandlers;
 using Denbot.Ingest.Models;
 using Denbot.Ingest.Services;
 using DisCatSharp;
+using Elasticsearch.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Nest;
 using Quartz;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -44,6 +46,25 @@ namespace Denbot.Ingest {
                     services.AddQuartzHostedService(q => { q.WaitForJobsToComplete = true; });
                     services.AddHttpClient<IRemoveRoleVoteService, RemoveRoleVoteHttpService>();
                     services.AddHttpClient<IAnalyticsService, LogstashAnalyticsService>();
+                    services.AddSingleton<IElasticClient>(provider => {
+                        var settings = provider.GetRequiredService<IOptions<AnalyticsSettings>>();
+                        ConnectionSettings connectionSettings;
+                        if (!string.IsNullOrEmpty(settings.Value.Elastic.CloudAuth))
+                        {
+                            connectionSettings = new ConnectionSettings(settings.Value.Elastic.CloudId,
+                                new BasicAuthenticationCredentials(settings.Value.Elastic.Username,
+                                    settings.Value.Elastic.Password));
+                        }
+                        else
+                        {
+                            connectionSettings = new ConnectionSettings(settings.Value.Elastic.CloudId,
+                                new ApiKeyAuthenticationCredentials(settings.Value.Elastic.ApiKey));
+                        }
+
+                        connectionSettings.EnableDebugMode();
+                        return new ElasticClient(connectionSettings);
+                    });
+                    services.AddTransient<IAnalyticsCorrelationService, ElasticAnalyticsCorrelationService>();
                     services.AddSingleton(provider => {
                         var settings = provider.GetRequiredService<IOptions<DiscordSettings>>();
                         return new DiscordClient(new DiscordConfiguration {

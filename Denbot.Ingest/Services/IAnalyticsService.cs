@@ -1,28 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Denbot.Ingest.Models.Analytics;
 
 namespace Denbot.Ingest.Services {
     public interface IAnalyticsService {
         /// <summary>
         /// Logs a message sent event to the analytics provider
         /// </summary>
-        /// <param name="msgId">Discord ID of the message</param>
-        /// <param name="authorId">Discord ID of the message author</param>
-        /// <param name="channelId">Discord ID of the channel the message was sent in</param>
-        /// <param name="guildId">Discord ID of the guild the message was sent in</param>
-        /// <param name="message">Raw string of the discord message</param>
-        /// <param name="sentAt">Timestamp of the message</param>
-        /// <param name="emotes">Array of emote strings</param>
-        /// <param name="userMentions">Users this message mentions, if any</param>
-        /// <param name="roleMentions">Roles this message mentions, if any</param>
-        /// <param name="channelMentions">Channels this message mentions, if any</param>
-        /// <param name="mentionsEveryone">True of this message mentions @everyone</param>
-        /// <param name="attachmentMimeTypes">Mime types of the attached files</param>
-        /// <param name="repliesTo">Discord ID of the message this message replies to</param>
-        /// <param name="threadId">Discord ID of the thread this message is in</param>
-        public Task LogMessageSentEventAsync(ulong msgId, ulong authorId, ulong channelId, ulong guildId, string message, DateTimeOffset sentAt,
-            string[] emotes, ulong[] userMentions, ulong[] roleMentions, ulong[] channelMentions, bool mentionsEveryone, 
-            string[] attachmentMimeTypes, ulong? repliesTo, ulong? threadId);
+        /// <param name="messageLog">Message log to be sent to the analytics provider</param>
+        public Task LogMessageSentEventAsync(MessageLog messageLog);
         
         /// <summary>
         /// Logs a reaction added event to the analytics provider
