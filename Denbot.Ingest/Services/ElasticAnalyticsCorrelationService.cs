@@ -58,7 +58,7 @@ namespace Denbot.Ingest.Services {
                 .Script(s => s
                     .Source($@"
                     ctx._source.mentionsEveryone = {mentionsEveryone}; 
-                    ctx._source.message = '{msg.Message}'; 
+                    ctx._source.message = '{msg.Message.Replace("'", @"\'")}'; 
                     ctx._source.userMentions = [{string.Join(',', msg.UserMentions.Select(i => $"{i}L"))}];
                     ctx._source.roleMentions = [{string.Join(',', msg.RoleMentions.Select(i => $"{i}L"))}];
                     ctx._source.channelMentions = [{string.Join(',', msg.ChannelMentions.Select(i => $"{i}L"))}];
