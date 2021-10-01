@@ -39,6 +39,40 @@ namespace Denbot.Ingest {
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+            _discordClient.VoiceStateUpdated += (_, args) => {
+                Task.Run(async () => {
+                    var voiceEventType = AnalyticsEventType.VoiceChannelJoin;
+                    ulong channelId;
+                    ulong guildId;
+                    if (args.Before != null && args.After != null && args.After.Channel == null) {
+                        voiceEventType = AnalyticsEventType.VoiceChannelLeave;
+                        channelId = args.Before.Channel.Id;
+                        guildId = args.Before.Guild.Id;
+                    }
+                    else if (args.Before != null && args.After != null) {
+                        voiceEventType = AnalyticsEventType.VoiceChannelMove;
+                        channelId = args.After.Channel.Id;
+                        guildId = args.After.Guild.Id;
+                    }
+                    else {
+                        channelId = args.Channel.Id;
+                        guildId = args.Guild.Id;
+                    }
+                    try {
+                        await _analyticsService.LogVoiceActivityEventAsync(
+                            new VoiceActivityLog(voiceEventType, channelId) {
+                                Timestamp = DateTimeOffset.Now,
+                                UserId = args.User.Id,
+                                GuildId = guildId
+                            });
+                    }
+                    catch (Exception ex) {
+                        _logger.LogError(ex, "Error occured while attempt to process an analytics event {EventType} related to voice channel {VoiceChannelId}", voiceEventType, channelId);
+                    }
+
+                }, stoppingToken);
+                return Task.CompletedTask;
+            };
             _discordClient.MessageCreated += (_, args) => {
                 Task.Run(async () => {
                     if (args.Author.IsBot) return;

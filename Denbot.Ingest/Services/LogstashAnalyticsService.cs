@@ -32,8 +32,10 @@ namespace Denbot.Ingest.Services {
             if (ShouldBeIgnored(messageLog.GuildId, messageLog.ChannelId)) {
                 return;
             }
-            var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}", 
-                new StringContent(JsonSerializer.Serialize(messageLog, _jsonSerializerOptions), Encoding.UTF8, "application/json"));
+
+            var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}",
+                new StringContent(JsonSerializer.Serialize(messageLog, _jsonSerializerOptions), Encoding.UTF8,
+                    "application/json"));
             if (!response.IsSuccessStatusCode) {
                 _logger.LogError("Could not dispatch message analytics event with ID {MessageId}. Received response status code {StatusCode} with response body {ResponseBody}",
                     messageLog.MessageId, response.StatusCode, await response.Content.ReadAsStringAsync());
@@ -48,11 +50,28 @@ namespace Denbot.Ingest.Services {
                 MessageId = msgId,
                 UserId = userId
             };
-            var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}", 
-                new StringContent(JsonSerializer.Serialize(reactLog, _jsonSerializerOptions), Encoding.UTF8, "application/json"));
+            var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}",
+                new StringContent(JsonSerializer.Serialize(reactLog, _jsonSerializerOptions), Encoding.UTF8,
+                    "application/json"));
             if (!response.IsSuccessStatusCode) {
                 _logger.LogError("Could not dispatch reaction analytics event with ID {MessageId}. Received response status code {StatusCode} with response body {ResponseBody}",
                     msgId, response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task LogVoiceActivityEventAsync(VoiceActivityLog voiceActivityLog) {
+            if (!_settings.Value.Enabled) {
+                return;
+            }
+
+            var response = await _httpClient.PutAsync($"{_settings.Value.LogstashUrl}",
+                new StringContent(JsonSerializer.Serialize(voiceActivityLog, _jsonSerializerOptions), Encoding.UTF8,
+                    "application/json"));
+            if (!response.IsSuccessStatusCode) {
+                _logger.LogError("Could not dispatch voice activity analytics event with ID in channel {ChannelId}. Received response status code {StatusCode} with response body {ResponseBody}",
+                    voiceActivityLog.VoiceChannelId, response.StatusCode, 
+                    await response.Content.ReadAsStringAsync());
             }
         }
 

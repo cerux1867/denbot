@@ -18,5 +18,12 @@ namespace Denbot.Ingest.Services {
         /// <param name="addedAt">Timestamp of the reaction</param>
         /// <param name="emote">Emote string of the reaction</param>
         public Task LogReactionAddedEventAsync(ulong msgId, ulong userId, DateTimeOffset addedAt, string emote);
+
+        /// <summary>
+        /// Logs a voice activity event - user has joined, moved or left a voice channel
+        /// </summary>
+        /// <param name="voiceActivityLog">Log of the voice channel activity to be sent to the analytics provider
+        /// </param>
+        public Task LogVoiceActivityEventAsync(VoiceActivityLog voiceActivityLog);
     }
 }

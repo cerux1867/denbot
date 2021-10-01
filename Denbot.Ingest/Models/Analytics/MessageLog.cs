@@ -1,5 +1,5 @@
 ﻿namespace Denbot.Ingest.Models.Analytics {
-    public record MessageLog : AnalyticsLog {
+    public record MessageLog : TextAnalyticsLogBase {
         public override AnalyticsEventType EventType => AnalyticsEventType.Message;
         public ulong ChannelId { get; set; }
         public ulong GuildId { get; set; }
