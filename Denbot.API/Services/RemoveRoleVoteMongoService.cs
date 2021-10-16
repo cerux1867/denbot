@@ -2,42 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Denbot.API.Entities;
-using Denbot.API.Models;
+using Denbot.Common.Entities;
 using Denbot.Common.Models;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Denbot.Common.Repositories;
+using MongoDB.Bson;
 
 namespace Denbot.API.Services {
     public class RemoveRoleVoteMongoService : IRemoveRoleVoteService {
         private readonly IGuildsService _guildsService;
-        private readonly IMongoCollection<RemoveRoleVoteEntity> _votes;
+        private readonly IMongoRepository<RemoveRoleVoteEntity> _votes;
 
-        public RemoveRoleVoteMongoService(IMongoDatabase db, IGuildsService guildsService, IOptions<MongoDbSettings> settings) {
+        public RemoveRoleVoteMongoService(IMongoRepository<RemoveRoleVoteEntity> db, IGuildsService guildsService) {
             _guildsService = guildsService;
-            _votes = db.GetCollection<RemoveRoleVoteEntity>(settings.Value.RemoveRoleVoteCollectionName);
+            _votes = db;
         }
 
         public async Task<List<RemoveRoleVoteEntity>> GetAllByGuildAsync(ulong guildId, VoteState? state) {
             await RefreshOngoingVoteStateAsync();
-            return state.HasValue
-                ? await _votes.AsQueryable().Where(v => v.State == state.Value && v.GuildId == guildId).ToListAsync()
-                : await _votes.AsQueryable().Where(v => v.GuildId == guildId).ToListAsync();
+            if (state.HasValue) {
+                return _votes
+                    .FilterBy(v => v.State == state.Value && v.GuildId == guildId).ToList();
+            }
+
+            return _votes.FilterBy(v => v.GuildId == guildId).ToList();
         }
 
         public async Task<RemoveRoleVoteEntity> GetByIdAsync(string id) {
             await RefreshOngoingVoteStateAsync();
-            return await _votes.AsQueryable().FirstOrDefaultAsync(v => v.VoteId == id);
+            return await _votes.FindByIdAsync(id);
         }
 
         public async Task<RemoveRoleVoteEntity> CreateInGuildAsync(ulong guildId, RemoveRoleVoteEntity vote) {
             await RefreshOngoingVoteStateAsync();
-            var ongoingVote = await _votes.AsQueryable().FirstOrDefaultAsync(v => v.State == VoteState.Ongoing && v.GuildId == guildId);
+            var ongoingVote = await _votes
+                .FindOneAsync(v => v.State == VoteState.Ongoing && v.GuildId == guildId);
             if (ongoingVote != null) {
                 return null;
             }
-            
+
             await _votes.InsertOneAsync(vote);
 
             return vote;
@@ -45,47 +47,39 @@ namespace Denbot.API.Services {
 
         public async Task<RemoveRoleVoteEntity> AddBallotAsync(string voteId, RemoveRoleBallot ballot) {
             await RefreshOngoingVoteStateAsync();
-            var ongoingVote = await _votes.AsQueryable()
-                .FirstOrDefaultAsync(v => v.State == VoteState.Ongoing && v.VoteId == voteId);
+            var ongoingVote = await _votes
+                .FindOneAsync(v => v.State == VoteState.Ongoing && v.Id == ObjectId.Parse(voteId));
             if (ongoingVote == null) {
                 return null;
             }
 
             var existingBallot = ongoingVote.Ballots.FirstOrDefault(b => b.VoterId == ballot.VoterId);
             if (existingBallot != null) {
-                var filterBuilder = Builders<RemoveRoleVoteEntity>.Filter;
-                var filter = filterBuilder
-                    .Eq(x => x.VoteId, voteId) & filterBuilder
-                    .ElemMatch(doc => doc.Ballots, el => el.VoterId == ballot.VoterId);
-                var updateBuilder = Builders<RemoveRoleVoteEntity>.Update;
-                var update = updateBuilder.Set(doc => doc.Ballots[-1].Type, ballot.Type)
-                    .Set(doc => doc.LastUpdatedAt, DateTimeOffset.Now)
-                    .Set(doc => doc.Ballots[-1].CastAt, ballot.CastAt);
-
-                await _votes.FindOneAndUpdateAsync(filter, update);
+                existingBallot.Type = ballot.Type;
+                existingBallot.CastAt = DateTimeOffset.Now;
+                await _votes.ReplaceOneAsync(ongoingVote);
             }
             else {
-                var filter = Builders<RemoveRoleVoteEntity>.Filter
-                    .Where(x => x.VoteId == voteId);
-                var update = Builders<RemoveRoleVoteEntity>.Update
-                    .Set(doc => doc.LastUpdatedAt, DateTimeOffset.Now)
-                    .Push(doc => doc.Ballots, ballot);
-                await _votes.FindOneAndUpdateAsync(filter, update);
+                ongoingVote.Ballots.Add(new RemoveRoleBallot {
+                    Type = ballot.Type,
+                    CastAt = DateTimeOffset.Now,
+                    VoterId = ballot.VoterId
+                });
+                await _votes.ReplaceOneAsync(ongoingVote);
             }
+
             await RefreshOngoingVoteStateAsync();
-            return await _votes.AsQueryable().FirstOrDefaultAsync(v => v.VoteId == voteId);
+            return await _votes.FindOneAsync(v => v.Id == ObjectId.Parse(voteId));
         }
 
         private async Task RefreshOngoingVoteStateAsync() {
-            var votes = await _votes.AsQueryable()
-                .Where(v => v.State == VoteState.Ongoing).ToListAsync();
+            var votes = _votes.AsQueryable();
             foreach (var vote in votes) {
                 var guild = await _guildsService.GetByIdAsync(vote.GuildId);
-                if (DateTimeOffset.Now >= vote.ExpiresAt || vote.Ballots.Count >= guild.Settings.RemoveRoleSettings.Quorum) {
+                if (DateTimeOffset.Now >= vote.ExpiresAt ||
+                    vote.Ballots.Count >= guild.Settings.RemoveRoleSettings.Quorum) {
                     var ayeCount = vote.Ballots.Count(b => b.Type == BallotType.Aye);
                     var nayCount = vote.Ballots.Count(b => b.Type == BallotType.Nay);
-                    var filter = Builders<RemoveRoleVoteEntity>.Filter
-                        .Where(x => x.VoteId == vote.VoteId);
                     var stateToUpdateTo = VoteState.Expired;
                     if (ayeCount > nayCount) {
                         stateToUpdateTo = VoteState.Passed;
@@ -93,11 +87,9 @@ namespace Denbot.API.Services {
                     else if (ayeCount < nayCount) {
                         stateToUpdateTo = VoteState.Failed;
                     }
-
-                    var update = Builders<RemoveRoleVoteEntity>.Update
-                        .Set(doc => doc.LastUpdatedAt, DateTimeOffset.Now)
-                        .Set(doc => doc.State, stateToUpdateTo);
-                    await _votes.FindOneAndUpdateAsync(filter, update);
+                    vote.State = stateToUpdateTo;
+                    vote.LastUpdatedAt = DateTimeOffset.Now;
+                    await _votes.ReplaceOneAsync(vote);
                 }
             }
         }

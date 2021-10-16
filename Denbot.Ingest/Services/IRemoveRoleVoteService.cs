@@ -5,12 +5,14 @@ using Denbot.Ingest.Results;
 
 namespace Denbot.Ingest.Services {
     public interface IRemoveRoleVoteService {
-        public Task<ValueResult<RemoveRoleVote>> StartVoteAsync(ulong guildId, ulong initiatingUserId, ulong targetUserId);
-        public Task<ValueResult<RemoveRoleVote>> GetVoteAsync(string voteId);
-        public Task<ValueResult<List<RemoveRoleVote>>> GetAllGuildVotesAsync(ulong guildId);
-        public Task<ValueResult<RemoveRoleVote>> CastBallotAsync(string voteId, BallotType type, ulong userId);
+        public Task<ValueResult<RemoveRoleVoteDto>> StartVoteAsync(ulong guildId, ulong initiatingUserId,
+            ulong targetUserId);
+        public Task<ValueResult<RemoveRoleVoteDto>> GetVoteAsync(string voteId);
+        public Task<ValueResult<List<RemoveRoleVoteDto>>> GetAllGuildVotesAsync(ulong guildId);
+        public Task<ValueResult<RemoveRoleVoteDto>> CastBallotAsync(string voteId, BallotType type, ulong userId);
 
         public Task<ValueResult<RemoveRoleSettings>> GetGuildRemoveRoleSettingsAsync(ulong guildId);
-        public Task<ValueResult<RemoveRoleSettings>> CreateOrUpdateGuildRemoveRoleSettingsAsync(ulong guildId, ulong guildOwnerId, RemoveRoleSettings settings);
+        public Task<ValueResult<RemoveRoleSettings>> CreateOrUpdateGuildRemoveRoleSettingsAsync(ulong guildId, 
+            ulong guildOwnerId, RemoveRoleSettings settings);
     }
 }

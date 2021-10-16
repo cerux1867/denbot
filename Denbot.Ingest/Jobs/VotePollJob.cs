@@ -36,13 +36,13 @@ namespace Denbot.Ingest.Jobs {
                 if (vote.Value.State == VoteState.Passed) {
                     await target.RevokeRoleAsync(targetableRole);
                     var restoreJob = JobBuilder.Create<RoleRestoreJob>()
-                        .WithIdentity($"{vote.Value.VoteId}-Restore", "RoleRemovalVote")
+                        .WithIdentity($"{vote.Value.Id}-Restore", "RoleRemovalVote")
                         .Build();
                     restoreJob.JobDataMap.Put("interactionContext", interactionContextInstance);
                     restoreJob.JobDataMap.Put("targetRole", targetableRole);
                     restoreJob.JobDataMap.Put("targetUser", target);
                     var trigger = TriggerBuilder.Create()
-                        .WithIdentity($"{vote.Value.VoteId}-restore", "RoleRemovalVote")
+                        .WithIdentity($"{vote.Value.Id}-restore", "RoleRemovalVote")
                         .StartAt(DateTimeOffset.Now.AddMinutes(guildSettings.Value.Period))
                         .Build();
                     await context.Scheduler.ScheduleJob(restoreJob, trigger);

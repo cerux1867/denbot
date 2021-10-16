@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Denbot.API.Entities;
+using Denbot.Common.Entities;
 
 namespace Denbot.API.Services {
     public interface IGuildsService {

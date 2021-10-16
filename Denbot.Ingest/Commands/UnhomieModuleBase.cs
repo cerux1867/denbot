@@ -79,26 +79,26 @@ namespace Denbot.Ingest.Commands {
                 .AddField("Aye", "0", true)
                 .AddField("Nay", "0", true)
                 .WithDescription(
-                    $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Name}** for a period of **{unhomieSettings.Value.Period}** minutes. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Name}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
+                    $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Mention}** for a period of **{unhomieSettings.Value.Period}** minutes. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Mention}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
                 .WithFooter(context.User.Username, context.User.AvatarUrl);
             msgBuilder = new DiscordWebhookBuilder()
                 .AddEmbed(embed)
                 .AddComponents(
                     new DiscordButtonComponent(ButtonStyle.Success,
-                        $"RoleRemovalBallot-{voteResult.Value.VoteId}-aye", "Aye"),
+                        $"RoleRemovalBallot-{voteResult.Value.Id}-aye", "Aye"),
                     new DiscordButtonComponent(ButtonStyle.Danger,
-                        $"RoleRemovalBallot-{voteResult.Value.VoteId}-nay", "Nay"));
+                        $"RoleRemovalBallot-{voteResult.Value.Id}-nay", "Nay"));
             await context.EditResponseAsync(msgBuilder);
 
             var job = JobBuilder.Create<VotePollJob>()
-                .WithIdentity(voteResult.Value.VoteId, "RoleRemovalVote")
+                .WithIdentity(voteResult.Value.Id, "RoleRemovalVote")
                 .Build();
             job.JobDataMap.Put("interactionContext", context);
             job.JobDataMap.Put("originalEmbedBuilder", embed);
             job.JobDataMap.Put("targetableRole", targetableRole);
-            job.JobDataMap.Put("voteId", voteResult.Value.VoteId);
+            job.JobDataMap.Put("voteId", voteResult.Value.Id);
             var triggerPoll = TriggerBuilder.Create()
-                .WithIdentity($"{voteResult.Value.VoteId}", "RoleRemovalVote")
+                .WithIdentity($"{voteResult.Value.Id}", "RoleRemovalVote")
                 .StartAt(DateTimeOffset.Now.AddSeconds(5))
                 .WithSimpleSchedule(x => {
                     x.WithIntervalInSeconds(5);

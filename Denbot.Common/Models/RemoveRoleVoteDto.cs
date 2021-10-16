@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 
 namespace Denbot.Common.Models {
-    public record RemoveRoleVote {
-        public virtual string VoteId { get; set; }
+    public class RemoveRoleVoteDto {
+        public string Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
         public ulong GuildId { get; set; }
         public ulong TargetUserId { get; set; }
         public ulong InitiatingUserId { get; set; }
