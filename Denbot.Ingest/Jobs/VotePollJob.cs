@@ -34,18 +34,15 @@ namespace Denbot.Ingest.Jobs {
                     await _removeRoleVoteService.GetGuildRemoveRoleSettingsAsync(interactionContextInstance.Guild.Id);
                 var targetableRole = interactionContextInstance.Guild.GetRole(guildSettings.Value.TargetableRole);
                 if (vote.Value.State == VoteState.Passed) {
-                    await target.RevokeRoleAsync(targetableRole);
-                    var restoreJob = JobBuilder.Create<RoleRestoreJob>()
-                        .WithIdentity($"{vote.Value.Id}-Restore", "RoleRemovalVote")
-                        .Build();
-                    restoreJob.JobDataMap.Put("interactionContext", interactionContextInstance);
-                    restoreJob.JobDataMap.Put("targetRole", targetableRole);
-                    restoreJob.JobDataMap.Put("targetUser", target);
-                    var trigger = TriggerBuilder.Create()
-                        .WithIdentity($"{vote.Value.Id}-restore", "RoleRemovalVote")
-                        .StartAt(DateTimeOffset.Now.AddMinutes(guildSettings.Value.Period))
-                        .Build();
-                    await context.Scheduler.ScheduleJob(restoreJob, trigger);
+                    await RevokeRoleAndScheduleRestoreAsync(target, targetableRole, vote.Value,
+                        interactionContextInstance, guildSettings.Value, context);
+                } else if (vote.Value.State == VoteState.Failed) {
+                    if (guildSettings.Value.IsBackfireEnabled) {
+                        var voteInitiator = await interactionContextInstance.Guild
+                            .GetMemberAsync(vote.Value.InitiatingUserId);
+                        await RevokeRoleAndScheduleRestoreAsync(voteInitiator, targetableRole, vote.Value,
+                            interactionContextInstance, guildSettings.Value, context);
+                    }
                 }
 
                 var stateString = vote.Value.State switch {
@@ -90,5 +87,22 @@ namespace Denbot.Ingest.Jobs {
                         new DiscordButtonComponent(ButtonStyle.Danger, $"RoleRemovalBallot-{voteId}-nay", "Nay")));
             }
         }
+
+        private async Task RevokeRoleAndScheduleRestoreAsync(DiscordMember target, DiscordRole targetableRole, 
+            RemoveRoleVoteDto vote, BaseContext discordContext, RemoveRoleSettings guildSettings, 
+            IJobExecutionContext jobContext) {
+            await target.RevokeRoleAsync(targetableRole);
+            var restoreJob = JobBuilder.Create<RoleRestoreJob>()
+                .WithIdentity($"{vote.Id}-Restore", "RoleRemovalVote")
+                .Build();
+            restoreJob.JobDataMap.Put("interactionContext", discordContext);
+            restoreJob.JobDataMap.Put("targetRole", targetableRole);
+            restoreJob.JobDataMap.Put("targetUser", target);
+            var trigger = TriggerBuilder.Create()
+                .WithIdentity($"{vote.Id}-restore", "RoleRemovalVote")
+                .StartAt(DateTimeOffset.Now.AddMinutes(guildSettings.Period))
+                .Build();
+            await jobContext.Scheduler.ScheduleJob(restoreJob, trigger);
+        } 
     }
 }
