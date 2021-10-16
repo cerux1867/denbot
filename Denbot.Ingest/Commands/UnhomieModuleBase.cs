@@ -41,6 +41,12 @@ namespace Denbot.Ingest.Commands {
                 return;
             }
 
+            // if (context.User.Id == target.Id) {
+            //     await context.EditResponseAsync(
+            //         msgBuilder.WithContent("Error: You cannot start a unhomie vote on yourself"));
+            //     return;
+            // }
+
             var targetableRole = context.Guild.GetRole(unhomieSettings.Value.TargetableRole);
             var member = await context.Guild.GetMemberAsync(target.Id);
             if (context.Member.Roles.FirstOrDefault(r => r.Id == targetableRole.Id) == null) {
@@ -70,6 +76,12 @@ namespace Denbot.Ingest.Commands {
                 await context.EditResponseAsync(msgBuilder.WithContent("Error: An unknown error has occured"));
             }
 
+            var desc =
+                $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Mention}** for a period of **{unhomieSettings.Value.Period}** minutes. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Mention}** have cast their votes or it will time out <t:{DateTimeOffset.Now.AddMinutes(unhomieSettings.Value.Timeout).ToUnixTimeSeconds()}:R>.";
+            if (unhomieSettings.Value.IsBackfireEnabled) {
+                desc += $" If the vote fails {context.Member.Mention} will be unhomied instead.";
+            }
+
             var embed = new DiscordEmbedBuilder()
                 .WithAuthor(member.Nickname ?? $"{target.Username}#{target.Discriminator}", null,
                     member.GuildAvatarUrl)
@@ -78,8 +90,7 @@ namespace Denbot.Ingest.Commands {
                 .WithTitle("Unhomie vote")
                 .AddField("Aye", "0", true)
                 .AddField("Nay", "0", true)
-                .WithDescription(
-                    $"Vote to temporarily remove {target.Mention} from role **{targetableRole.Mention}** for a period of **{unhomieSettings.Value.Period}** minutes. It will end once at least **{unhomieSettings.Value.Quorum}** members of role **{targetableRole.Mention}** have cast their votes or it will time out in **{unhomieSettings.Value.Timeout}** minutes")
+                .WithDescription(desc)
                 .WithFooter(context.User.Username, context.User.AvatarUrl);
             msgBuilder = new DiscordWebhookBuilder()
                 .AddEmbed(embed)
