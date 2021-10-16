@@ -24,11 +24,11 @@ namespace Denbot.Ingest.Services {
             };
         }
 
-        public async Task<ValueResult<RemoveRoleVote>> StartVoteAsync(ulong guildId, ulong initiatingUserId,
+        public async Task<ValueResult<RemoveRoleVoteDto>> StartVoteAsync(ulong guildId, ulong initiatingUserId,
             ulong targetUserId) {
             var settingsResult = await GetGuildSettingsAsync(guildId);
             if (settingsResult.Type != ResultType.Ok) {
-                return Result.NotFound<RemoveRoleVote>("Guild is not configured");
+                return Result.NotFound<RemoveRoleVoteDto>("Guild is not configured");
             }
 
             var voteStartResult = await _client.PostAsync($"Guilds/{guildId}/Remove-Role-Votes",
@@ -38,36 +38,36 @@ namespace Denbot.Ingest.Services {
                     ExpiresAt = DateTimeOffset.Now.AddMinutes(settingsResult.Value.Settings.RemoveRoleSettings.Timeout)
                 }), Encoding.UTF8, "application/json"));
             if (voteStartResult.StatusCode == HttpStatusCode.Conflict) {
-                return Result.Conflict<RemoveRoleVote>("There is already an ongoing vote in this guild");
+                return Result.Conflict<RemoveRoleVoteDto>("There is already an ongoing vote in this guild");
             }
 
             return Result.Ok(
-                JsonSerializer.Deserialize<RemoveRoleVote>(await voteStartResult.Content.ReadAsStringAsync(), _serializerOptions));
+                JsonSerializer.Deserialize<RemoveRoleVoteDto>(await voteStartResult.Content.ReadAsStringAsync(), _serializerOptions));
         }
 
-        public async Task<ValueResult<RemoveRoleVote>> GetVoteAsync(string voteId) {
+        public async Task<ValueResult<RemoveRoleVoteDto>> GetVoteAsync(string voteId) {
             var voteResult = await _client.GetAsync($"Remove-Role-Votes/{voteId}");
             if (voteResult.StatusCode == HttpStatusCode.NotFound) {
-                return Result.NotFound<RemoveRoleVote>("Vote with the given ID was no found");
+                return Result.NotFound<RemoveRoleVoteDto>("Vote with the given ID was no found");
             }
 
             voteResult.EnsureSuccessStatusCode();
-            return Result.Ok(JsonSerializer.Deserialize<RemoveRoleVote>(await voteResult.Content.ReadAsStringAsync(), _serializerOptions));
+            return Result.Ok(JsonSerializer.Deserialize<RemoveRoleVoteDto>(await voteResult.Content.ReadAsStringAsync(), _serializerOptions));
         }
 
-        public async Task<ValueResult<List<RemoveRoleVote>>> GetAllGuildVotesAsync(ulong guildId) {
+        public async Task<ValueResult<List<RemoveRoleVoteDto>>> GetAllGuildVotesAsync(ulong guildId) {
             var votesResult = await _client.GetAsync($"Guilds/{guildId}/Remove-Role-Votes");
             if (votesResult.StatusCode == HttpStatusCode.NotFound) {
-                return Result.NotFound<List<RemoveRoleVote>>("Guild with the given ID was not found");
+                return Result.NotFound<List<RemoveRoleVoteDto>>("Guild with the given ID was not found");
             }
             votesResult.EnsureSuccessStatusCode();
 
             return Result.Ok(
-                JsonSerializer.Deserialize<List<RemoveRoleVote>>(await votesResult.Content.ReadAsStringAsync(),
+                JsonSerializer.Deserialize<List<RemoveRoleVoteDto>>(await votesResult.Content.ReadAsStringAsync(),
                     _serializerOptions));
         }
 
-        public async Task<ValueResult<RemoveRoleVote>> CastBallotAsync(string voteId, BallotType type, ulong userId) {
+        public async Task<ValueResult<RemoveRoleVoteDto>> CastBallotAsync(string voteId, BallotType type, ulong userId) {
             var voteResult = await _client.PostAsync($"Remove-Role-Votes/{voteId}/Ballots", new StringContent(
                 JsonSerializer.Serialize(new RemoveRoleBallot {
                     Type = type,
@@ -75,14 +75,14 @@ namespace Denbot.Ingest.Services {
                     VoterId = userId
                 }), Encoding.UTF8, "application/json"));
             if (voteResult.StatusCode == HttpStatusCode.NotFound) {
-                return Result.NotFound<RemoveRoleVote>("Vote with the given ID was not found");
+                return Result.NotFound<RemoveRoleVoteDto>("Vote with the given ID was not found");
             }
 
             if (!voteResult.IsSuccessStatusCode) {
-                return new FailureValueResult<RemoveRoleVote>("An unknown error has occured", ResultType.Other);
+                return new FailureValueResult<RemoveRoleVoteDto>("An unknown error has occured", ResultType.Other);
             }
 
-            return Result.Ok(JsonSerializer.Deserialize<RemoveRoleVote>(await voteResult.Content.ReadAsStringAsync(), _serializerOptions));
+            return Result.Ok(JsonSerializer.Deserialize<RemoveRoleVoteDto>(await voteResult.Content.ReadAsStringAsync(), _serializerOptions));
         }
 
         public async Task<ValueResult<RemoveRoleSettings>> GetGuildRemoveRoleSettingsAsync(ulong guildId) {
@@ -117,18 +117,20 @@ namespace Denbot.Ingest.Services {
             var response = await _client.PostAsync("Guilds",
                 new StringContent(JsonSerializer.Serialize(guild), Encoding.UTF8, "application/json"));
             response.EnsureSuccessStatusCode();
-            var guildResult = JsonSerializer.Deserialize<ConfiguredGuild>(await response.Content.ReadAsStringAsync(), _serializerOptions);
+            var guildResult = JsonSerializer.Deserialize<ConfiguredGuildDto>(await response.Content.ReadAsStringAsync(),
+                _serializerOptions);
             return Result.Ok(guildResult.Settings.RemoveRoleSettings);
         }
 
-        private async Task<ValueResult<ConfiguredGuild>> GetGuildSettingsAsync(ulong guildId) {
+        private async Task<ValueResult<ConfiguredGuildDto>> GetGuildSettingsAsync(ulong guildId) {
             var settingsResponse = await _client.GetAsync($"Guilds/{guildId}");
             if (settingsResponse.StatusCode == HttpStatusCode.NotFound) {
-                return Result.NotFound<ConfiguredGuild>("This guild is not configured");
+                return Result.NotFound<ConfiguredGuildDto>("This guild is not configured");
             }
 
             var settings =
-                JsonSerializer.Deserialize<ConfiguredGuild>(await settingsResponse.Content.ReadAsStringAsync(), _serializerOptions);
+                JsonSerializer.Deserialize<ConfiguredGuildDto>(await settingsResponse.Content.ReadAsStringAsync(), 
+                    _serializerOptions);
             return Result.Ok(settings);
         }
     }

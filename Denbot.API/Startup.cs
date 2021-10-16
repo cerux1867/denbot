@@ -1,5 +1,7 @@
 using Denbot.API.Models;
 using Denbot.API.Services;
+using Denbot.Common.Entities;
+using Denbot.Common.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,8 @@ namespace Denbot.API {
         public void ConfigureServices(IServiceCollection services) {
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDB"));
 
+            services.AddAutoMapper(typeof(Startup));
+
             services.AddSingleton<IMongoClient, MongoClient>(provider => {
                 var settings = provider.GetRequiredService<IOptions<MongoDbSettings>>();
                 var client = new MongoClient(settings.Value.ConnectionString);
@@ -31,6 +35,8 @@ namespace Denbot.API {
                 var db = provider.GetRequiredService<IMongoClient>().GetDatabase(settings.Value.DatabaseName);
                 return db;
             });
+            services.AddTransient<IMongoRepository<ConfiguredGuildEntity>, MongoRepository<ConfiguredGuildEntity>>();
+            services.AddTransient<IMongoRepository<RemoveRoleVoteEntity>, MongoRepository<RemoveRoleVoteEntity>>();
             services.AddSingleton<IRemoveRoleVoteService, RemoveRoleVoteMongoService>();
             services.AddSingleton<IGuildsService, GuildsMongoService>();
 

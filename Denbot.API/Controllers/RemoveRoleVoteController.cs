@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Denbot.API.Entities;
+using AutoMapper;
 using Denbot.API.Services;
+using Denbot.Common.Entities;
 using Denbot.Common.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,19 +12,21 @@ namespace Denbot.API.Controllers {
     [ApiController]
     public class RemoveRoleVoteController : ControllerBase {
         private readonly IRemoveRoleVoteService _removeRoleVoteService;
+        private readonly IMapper _mapper;
 
-        public RemoveRoleVoteController(IRemoveRoleVoteService removeRoleVoteService) {
+        public RemoveRoleVoteController(IRemoveRoleVoteService removeRoleVoteService, IMapper mapper) {
             _removeRoleVoteService = removeRoleVoteService;
+            _mapper = mapper;
         }
 
         [HttpGet("~/Guilds/{guildId}/Remove-Role-Votes")]
-        public async Task<ActionResult<List<RemoveRoleVoteEntity>>> GetAllAsync([FromRoute] ulong guildId, [FromQuery] VoteState? state) {
+        public async Task<ActionResult<List<RemoveRoleVoteDto>>> GetAllAsync([FromRoute] ulong guildId, [FromQuery] VoteState? state) {
             var response = await _removeRoleVoteService.GetAllByGuildAsync(guildId, state);
-            return Ok(response);
+            return Ok(_mapper.Map<List<RemoveRoleVoteDto>>(response));
         }
 
         [HttpPost("~/Guilds/{guildId}/Remove-Role-Votes")]
-        public async Task<ActionResult<RemoveRoleVoteEntity>> AddAsync([FromRoute] ulong guildId, [FromBody] CreatableRemoveRoleVote vote) {
+        public async Task<ActionResult<RemoveRoleVoteDto>> AddAsync([FromRoute] ulong guildId, [FromBody] CreatableRemoveRoleVote vote) {
             var response = await _removeRoleVoteService.CreateInGuildAsync(guildId, new RemoveRoleVoteEntity {
                 Ballots = new List<RemoveRoleBallot>(),
                 State = VoteState.Ongoing,
@@ -38,27 +41,28 @@ namespace Denbot.API.Controllers {
                 return Conflict();
             }
 
-            return CreatedAtAction("GetById", new {voteId = response.VoteId}, response);
+            return CreatedAtAction("GetById", new {voteId = response.Id}, 
+                _mapper.Map<RemoveRoleVoteDto>(response));
         }
         
         [HttpGet("{voteId}")]
-        public async Task<ActionResult<RemoveRoleVoteEntity>> GetByIdAsync([FromRoute] string voteId) {
+        public async Task<ActionResult<RemoveRoleVoteDto>> GetByIdAsync([FromRoute] string voteId) {
             var response = await _removeRoleVoteService.GetByIdAsync(voteId);
             if (response == null) {
                 return NotFound();
             }
 
-            return response;
+            return Ok(_mapper.Map<RemoveRoleVoteDto>(response));
         }
         
         [HttpPost("{voteId}/Ballots")]
-        public async Task<ActionResult<List<RemoveRoleVoteEntity>>> AddBallotAsync([FromRoute] string voteId, [FromBody] RemoveRoleBallot ballot) {
+        public async Task<ActionResult<RemoveRoleVoteDto>> AddBallotAsync([FromRoute] string voteId, [FromBody] RemoveRoleBallot ballot) {
             var response = await _removeRoleVoteService.AddBallotAsync(voteId, ballot);
             if (response == null) {
                 return NotFound();
             }
 
-            return Ok(response);
+            return Ok(_mapper.Map<RemoveRoleVoteDto>(response));
         }
     }
 }

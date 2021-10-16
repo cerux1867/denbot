@@ -1,32 +1,34 @@
 ﻿using System.Threading.Tasks;
-using Denbot.API.Entities;
-using Denbot.API.Models;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
+using Denbot.Common.Entities;
+using Denbot.Common.Repositories;
 
 namespace Denbot.API.Services {
     public class GuildsMongoService : IGuildsService {
-        private readonly IMongoCollection<ConfiguredGuildEntity> _guildsCollection;
+        private readonly IMongoRepository<ConfiguredGuildEntity> _configuredGuildEntityRepo;
 
-        public GuildsMongoService(IMongoDatabase db, IOptions<MongoDbSettings> settings) {
-            _guildsCollection =
-                db.GetCollection<ConfiguredGuildEntity>(settings.Value.GuildsCollectionName);
+        public GuildsMongoService(IMongoRepository<ConfiguredGuildEntity> configuredGuildRepo) {
+            _configuredGuildEntityRepo = configuredGuildRepo;
         }
 
         public async Task<ConfiguredGuildEntity> GetByIdAsync(ulong guildId) {
-            var existingDoc = await _guildsCollection.AsQueryable()
-                .FirstOrDefaultAsync(doc => doc.GuildId == guildId);
+            var existingDoc = await _configuredGuildEntityRepo
+                .FindOneAsync(entity => entity.GuildId == guildId);
             return existingDoc;
         }
 
         public async Task<ConfiguredGuildEntity> CreateAsync(ConfiguredGuildEntity guildEntity) {
-            var filter = Builders<ConfiguredGuildEntity>.Filter
-                .Eq(doc => doc.GuildId, guildEntity.GuildId);
-            var result=  await _guildsCollection.FindOneAndReplaceAsync(filter, guildEntity, new FindOneAndReplaceOptions<ConfiguredGuildEntity> {
-                IsUpsert = true,
-                ReturnDocument = ReturnDocument.After
-            });
+            var existingGuild = await _configuredGuildEntityRepo
+                .FindOneAsync(v => guildEntity.GuildId == v.GuildId);
+            if (existingGuild != null) {
+                guildEntity.Id = existingGuild.Id;
+                await _configuredGuildEntityRepo.ReplaceOneAsync(guildEntity);
+                
+            }
+            else {
+                await _configuredGuildEntityRepo.InsertOneAsync(guildEntity);
+            }
+            var result = await _configuredGuildEntityRepo
+                .FindOneAsync(v => v.GuildId == guildEntity.GuildId);
             return result;
         }
     }

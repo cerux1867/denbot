@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Denbot.API.Entities;
+using Denbot.Common.Entities;
 using Denbot.Common.Models;
 
 namespace Denbot.API.Services {
