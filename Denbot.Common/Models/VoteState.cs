@@ -6,6 +6,7 @@ namespace Denbot.Common.Models {
         Ongoing,
         Passed,
         Failed,
-        Expired
+        Expired,
+        SelfX
     }
 }

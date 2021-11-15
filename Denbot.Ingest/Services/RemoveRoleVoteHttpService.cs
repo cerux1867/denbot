@@ -107,10 +107,35 @@ namespace Denbot.Ingest.Services {
                 };
             }
             else {
+                var settingsToSet = settingsResult.Value.Settings.RemoveRoleSettings;
+                if (settingsToSet.IsEnabled != settings.IsEnabled) {
+                    settingsToSet.IsEnabled = settings.IsEnabled;
+                }
+
+                if (settingsToSet.IsBackfireEnabled != settings.IsBackfireEnabled) {
+                    settingsToSet.IsBackfireEnabled = settings.IsBackfireEnabled;
+                }
+
+                if (settingsToSet.Period != settings.Period) {
+                    settingsToSet.Period = settings.Period;
+                }
+
+                if (settingsToSet.Quorum != settings.Quorum) {
+                    settingsToSet.Quorum = settings.Quorum;
+                }
+
+                if (settingsToSet.Timeout != settings.Timeout) {
+                    settingsToSet.Timeout = settings.Timeout;
+                }
+
+                if (settingsToSet.TargetableRole != settings.TargetableRole) {
+                    settingsToSet.TargetableRole = settings.TargetableRole;
+                }
+                
                 guild = new CreatableGuild {
                     Id = settingsResult.Value.GuildId,
                     OwnerUserId = settingsResult.Value.GuildOwnerId,
-                    RemoveRoleSettings = settings
+                    RemoveRoleSettings = settingsToSet
                 };
             }
 

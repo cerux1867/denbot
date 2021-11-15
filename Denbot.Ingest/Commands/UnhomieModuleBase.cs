@@ -41,11 +41,11 @@ namespace Denbot.Ingest.Commands {
                 return;
             }
 
-            // if (context.User.Id == target.Id) {
-            //     await context.EditResponseAsync(
-            //         msgBuilder.WithContent("Error: You cannot start a unhomie vote on yourself"));
-            //     return;
-            // }
+            if (context.User.Id == target.Id) {
+                await context.EditResponseAsync(
+                    msgBuilder.WithContent("Error: You cannot start an unhomie vote on yourself"));
+                return;
+            }
 
             var targetableRole = context.Guild.GetRole(unhomieSettings.Value.TargetableRole);
             var member = await context.Guild.GetMemberAsync(target.Id);

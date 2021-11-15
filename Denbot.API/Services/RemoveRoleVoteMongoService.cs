@@ -78,20 +78,31 @@ namespace Denbot.API.Services {
                 var guild = await _guildsService.GetByIdAsync(vote.GuildId);
                 if (DateTimeOffset.Now >= vote.ExpiresAt ||
                     vote.Ballots.Count >= guild.Settings.RemoveRoleSettings.Quorum) {
-                    var ayeCount = vote.Ballots.Count(b => b.Type == BallotType.Aye);
-                    var nayCount = vote.Ballots.Count(b => b.Type == BallotType.Nay);
-                    var stateToUpdateTo = VoteState.Expired;
-                    if (ayeCount > nayCount) {
-                        stateToUpdateTo = VoteState.Passed;
-                    }
-                    else if (ayeCount < nayCount) {
-                        stateToUpdateTo = VoteState.Failed;
-                    }
-                    vote.State = stateToUpdateTo;
-                    vote.LastUpdatedAt = DateTimeOffset.Now;
-                    await _votes.ReplaceOneAsync(vote);
+                    await FinaliseVoteAsync(vote);
+                }
+                else if (vote.Ballots.FirstOrDefault(b => b.VoterId == vote.TargetUserId) != null) {
+                    await FinaliseVoteAsync(vote);
                 }
             }
+        }
+
+        private async Task FinaliseVoteAsync(RemoveRoleVoteEntity vote) {
+            var ayeCount = vote.Ballots.Count(b => b.Type == BallotType.Aye);
+            var nayCount = vote.Ballots.Count(b => b.Type == BallotType.Nay);
+            var stateToUpdateTo = VoteState.Expired;
+            if (vote.Ballots.FirstOrDefault(b => b.VoterId == vote.TargetUserId) != null) {
+                stateToUpdateTo = VoteState.SelfX;
+            }
+            else if (ayeCount > nayCount) {
+                stateToUpdateTo = VoteState.Passed;
+            }
+            else if (ayeCount < nayCount) {
+                stateToUpdateTo = VoteState.Failed;
+            }
+
+            vote.State = stateToUpdateTo;
+            vote.LastUpdatedAt = DateTimeOffset.Now;
+            await _votes.ReplaceOneAsync(vote);
         }
     }
 }

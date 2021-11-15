@@ -29,7 +29,11 @@ namespace Denbot.Ingest.Commands {
                 [Option("period", "Number of minutes the user will be unroled for on a successful vote result")]
                 long period = 10,
                 [Option("timeout", "Number of minutes until a vote expires. Maximum of 10.")]
-                long timeout = 10) {
+                long timeout = 10,
+                [Option("backfire", "Determines if a failed vote will unhomie the initiating user")]
+                bool isBackfireEnabled = true,
+                [Option("selfx", "Determines if the target user voting nay will result in a immediate unhomie")]
+                bool isSelfXEnabled = true) {
                 var interactionResponseBuilder = new DiscordInteractionResponseBuilder()
                     .AsEphemeral(true);
                 await context.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -42,7 +46,8 @@ namespace Denbot.Ingest.Commands {
                         Quorum = Convert.ToInt32(quorum),
                         Timeout = Convert.ToInt32(timeout),
                         IsEnabled = isEnabled,
-                        TargetableRole = role.Id
+                        TargetableRole = role.Id,
+                        IsBackfireEnabled = isBackfireEnabled
                     });
                 if (settings.Type != ResultType.Ok) {
                     await context.EditResponseAsync(

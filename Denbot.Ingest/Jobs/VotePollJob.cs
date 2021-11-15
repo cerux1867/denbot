@@ -48,7 +48,8 @@ namespace Denbot.Ingest.Jobs {
                 var stateString = vote.Value.State switch {
                     VoteState.Expired => "Expired",
                     VoteState.Failed => "Failed",
-                    VoteState.Passed => "Passed"
+                    VoteState.Passed => "Passed",
+                    VoteState.SelfX => "Cucked"
                 };
                 var voteResultString = $"**{stateString}** <t:{vote.Value.LastUpdatedAt.ToUnixTimeSeconds()}:R> with the final tally:\n";
                 orgEmbedBuilder
