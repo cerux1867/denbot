@@ -33,7 +33,7 @@ namespace Denbot.Ingest.Jobs {
                 var guildSettings =
                     await _removeRoleVoteService.GetGuildRemoveRoleSettingsAsync(interactionContextInstance.Guild.Id);
                 var targetableRole = interactionContextInstance.Guild.GetRole(guildSettings.Value.TargetableRole);
-                if (vote.Value.State == VoteState.Passed) {
+                if (vote.Value.State is VoteState.Passed or VoteState.SelfX) {
                     await RevokeRoleAndScheduleRestoreAsync(target, targetableRole, vote.Value,
                         interactionContextInstance, guildSettings.Value, context);
                 } else if (vote.Value.State == VoteState.Failed) {
